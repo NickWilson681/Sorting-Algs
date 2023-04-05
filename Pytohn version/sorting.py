@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import random
 import time 
 
-NUM_ELEMENTS = 50
+NUM_ELEMENTS = 800
 GRAPH_X = 1600
 GRAPH_Y = 800
 BAR_WIDTH = GRAPH_X/NUM_ELEMENTS
@@ -15,7 +15,8 @@ sg.theme('Black')
 
 layout = [[sg.Graph(GRAPH_SIZE, (0,0), DATA_SIZE, k='-GRAPH-')],
           [sg.Button('Randomize'), sg.Button('Bubble_sort'),
-           sg.Button('Insertion_sort'), sg.Button('Selection_sort')],
+           sg.Button('Insertion_sort'), sg.Button('Selection_sort'),
+           sg.Button('Radix_sort')],
         ]
 
 window = sg.Window('Bar Graph', layout, finalize=True)
@@ -75,7 +76,7 @@ def bubble_sort(graph, array):
         else:
             i += 1
 
-        window.read(timeout=1)
+        window.read(timeout=0)
     
     return array.copy()
 
@@ -100,13 +101,19 @@ def insertion_sort(graph, array):
                                         bottom_right=(k * BAR_SPACING + EDGE_OFFSET + BAR_WIDTH, 0),
                                         fill_color='White')
 
-            window.read(timeout=1)
+            window.read(timeout=0)
     
     return array.copy()
 
 def selection_sort(graph, array):
     for i in range(NUM_ELEMENTS):
+        graph.erase()
+        min_index = i
+        for j in range(i+1, NUM_ELEMENTS):
+            if array[j] < array[min_index]:
+                min_index = j
         
+        (array[i], array[min_index]) = (array[min_index], array[i])
 
         for k in range(len(array)):
             graph_value = array[k]
@@ -122,6 +129,72 @@ def selection_sort(graph, array):
         window.read(timeout=1)
                 
 
+    return array.copy()
+
+def radix_sort(graph, array):
+    biggest_num = max(array)
+    digits = len(str(biggest_num))
+
+    for i in reversed(range(digits)):
+        temp_array = []
+        for j in range(NUM_ELEMENTS):
+            string = str(array[j])
+            string = string.zfill(digits)
+            temp_array.append(string)
+        
+        zeroes = []
+        ones = []
+        twos = []
+        threes = []
+        fours = []
+        fives = []
+        sixes = []
+        sevens = []
+        eights = []
+        nines = []
+        misc = []
+
+        for j in range(NUM_ELEMENTS):
+            current_element = temp_array[j]
+            cur_digit = current_element[i]
+
+            if cur_digit == '0':
+                zeroes.append(current_element)
+            elif cur_digit == '1':
+                ones.append(current_element)
+            elif cur_digit == '2':
+                twos.append(current_element)
+            elif cur_digit == '3':
+                threes.append(current_element)
+            elif cur_digit == '4':
+                fours.append(current_element)
+            elif cur_digit == '5':
+                fives.append(current_element)
+            elif cur_digit == '6':
+                sixes.append(current_element)
+            elif cur_digit == '7':
+                sevens.append(current_element)
+            elif cur_digit == '8':
+                eights.append(current_element)
+            elif cur_digit == '9':
+                nines.append(current_element)
+            else:
+                misc.append(current_element)
+
+        temp_array = zeroes + ones + twos + threes + fours + fives + sixes + sevens + eights + nines + misc
+
+        array = []
+        for j in range(NUM_ELEMENTS):
+            array.append(float(temp_array[j]))
+
+        graph.erase()
+        for k in range(NUM_ELEMENTS):
+            graph_value = array[k]
+            graph.draw_rectangle(top_left=(k * BAR_SPACING + EDGE_OFFSET, graph_value),
+                                bottom_right=(k * BAR_SPACING + EDGE_OFFSET + BAR_WIDTH, 0),
+                                fill_color='White')
+
+        window.read(timeout=300)
     return array.copy()
 
 while True:
@@ -149,5 +222,9 @@ while True:
     if event == "Selection_sort":
         graph.erase()
         GRAPH_ARRAY = selection_sort(graph, GRAPH_ARRAY)
+
+    if event == "Radix_sort":
+        graph.erase()
+        GRAPH_ARRAY = radix_sort(graph, GRAPH_ARRAY)
 
 window.close()
